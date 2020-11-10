@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useState } from 'react';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Text, View, SafeAreaView, ScrollView, StyleSheet, SectionList } from 'react-native';
 import { LineChart, YAxis, XAxis, Grid, ProgressCircle } from 'react-native-svg-charts'
 
@@ -12,16 +14,23 @@ import moment from 'moment'
 import { loadStripe } from '@stripe/stripe-js';
 import { useStripe, Elements } from '@stripe/react-stripe-js';
 
+import Dialog from 'react-native-dialog'
+
 const stripePromise = loadStripe('pk_test_51HL8h8LjpR7kl7iGeWLOW7OGQw2qAix0ToeOkzAgOUceEiOUDsGDmuDI1tQyNWSkOiQvdwOxFBpQEw4rBoDuI3Dc00i6Fa8VWD');
 
 const data = []
 // const data = [180, 132, 166, 140, 190, 200, 85, 231, 35, 53, 180, 24, 150, 100, 500, 180, 132, 166, 140, 190, 200, 85, 231, 35, 53, 180, 24, 150, 100, 500]
+const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2
+})
 
 const DATA = [
     {
         title: "Finance summary",
         data: [
-            { key: 1, totalBalance: 10000, futurePayout: 1000, toBank: 1000 },
+            { key: 1, totalBalance: formatter.format(10000), futurePayout: formatter.format(1000), toBank: formatter.format(1000) },
         ]
     },
     {
@@ -33,13 +42,37 @@ const DATA = [
             { key: 4, total: 90 },
         ]
     },
+    {
+        goals: {
+            title: "Monthly Goals",
+            data: [{key: 1, monthly_income: formatter.format(0) }]
+        }
+    }
 ]
 
+
+
+console.log(DATA)
 const axesSvg = { fontSize: 10, fill: 'grey' };
 const verticalContentInset = { top: 10, bottom: 10 }
 const xAxisHeight = 30
 
 function HomeScreen() {
+
+    const [visable, setVisable] = useState(false)
+
+    const showGoalSet = () => {
+        setVisable(true);
+    }
+
+    // const handleMonthlyGoal = () => {
+    //     setVisable(false)
+
+    // }
+
+    const handleCancel = () => {
+        setVisable(false);
+    }
 
     const stripe = useStripe();
     var db = firebase.firestore();
@@ -119,8 +152,18 @@ function HomeScreen() {
                                 <Text style={{ fontSize: 20, fontWeight: '500', marginRight: 8 }}>$0.00</Text>
                                 <Text style={{ color: 'black', fontSize: 15, marginRight: 8 }}>Income this month</Text>
                                 <View style={{ alignItems: 'center', justifyContent: 'center', position: 'absolute', right: 20, }}>
+                                <View>
+                                    <Dialog.Container>
+                                        <Dialog.Title>Set Monthly Income Goal</Dialog.Title>
+                                        <Dialog.input>
+                                        </Dialog.input>
+                                        <Dialog.Button label="Set" />
+                                        <Dialog.Button label="Cancel" onPress={handleCancel} />
+                                    </Dialog.Container>
+                                </View>
                                     <ProgressCircle style={{ height: 90, width: 90 }} progress={0.0} progressColor={'rgb(48, 209, 88)'} />
                                 </View>
+                                <TouchableOpacity title='set goal' onPress={showGoalSet}>Set Goal</TouchableOpacity>
                             </View>
                         </View>
                         <View style={{
